@@ -1,0 +1,26 @@
+{
+  "name": "anime-mobile-port",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3010",
+    "build": "next build",
+    "start": "next start -H 0.0.0.0 -p 3010",
+    "cap:sync": "cap sync ios",
+    "cap:open": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/ios": "^8.4.1",
+    "lucide-react": "^1.21.0",
+    "next": "13.4.12",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "typescript": "^5.1.6"
+  }
+}

@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Anime Hub Player Chrome</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: "Segoe UI", Arial, sans-serif;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: transparent;
+        color: #e7f7ff;
+      }
+
+      body.surface-header {
+        background: linear-gradient(180deg, rgba(2, 7, 12, 0.94), rgba(2, 7, 12, 0.58) 52%, rgba(2, 7, 12, 0));
+      }
+
+      body.surface-controls {
+        background: transparent;
+      }
+
+      .shell {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        padding: 10px 16px;
+        box-sizing: border-box;
+      }
+
+      .headerBar,
+      .controlPanel {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .headerBar {
+        display: grid;
+        grid-template-columns: 104px minmax(0, 1fr) 104px;
+        min-height: 48px;
+        padding: 0;
+      }
+
+      .titleBlock {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        align-items: center;
+        text-align: center;
+      }
+
+      .eyebrow {
+        font-size: 10px;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        color: rgba(194, 215, 229, 0.74);
+      }
+
+      .title {
+        font-size: 15px;
+        font-weight: 650;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .buttons,
+      .primaryControls,
+      .secondaryControls,
+      .trackSelectors {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .headerBar > .buttons:first-child {
+        justify-content: flex-start;
+      }
+
+      .headerBar > .buttons:last-child {
+        justify-content: flex-end;
+      }
+
+      .primaryControls {
+        justify-content: center;
+      }
+
+      .trackSelectors {
+        flex-wrap: nowrap;
+        min-width: 0;
+      }
+
+      button {
+        border: 1px solid rgba(213, 229, 242, 0.18);
+        background: rgba(8, 13, 19, 0.74);
+        color: #f2f7fb;
+        border-radius: 8px;
+        min-width: 40px;
+        height: 40px;
+        padding: 0 12px;
+        cursor: pointer;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 650;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(18px);
+        transition: background 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease, transform 0.08s ease;
+      }
+
+      button:hover {
+        background: rgba(29, 43, 58, 0.9);
+        border-color: rgba(229, 238, 247, 0.34);
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
+        transform: translateY(-1px);
+      }
+
+      button:focus-visible,
+      .trackSelect:focus-visible,
+      input[type="range"]:focus-visible {
+        outline: 2px solid rgba(115, 213, 255, 0.9);
+        outline-offset: 2px;
+      }
+
+      button:active {
+        transform: translateY(0) scale(0.98);
+        background: rgba(41, 56, 72, 0.92);
+      }
+
+      button.primary {
+        min-width: 44px;
+        background: #f2f7fb;
+        border-color: rgba(255, 255, 255, 0.72);
+        color: #071018;
+        font-weight: 700;
+      }
+
+      .iconButton {
+        display: grid;
+        place-items: center;
+        width: 40px;
+        min-width: 40px;
+        padding: 0;
+      }
+
+      .chromeIcon {
+        position: relative;
+        display: block;
+        width: 18px;
+        height: 18px;
+      }
+
+      .chromeIcon.back::before,
+      .chromeIcon.back::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 3px;
+        background: currentColor;
+      }
+
+      .chromeIcon.back::before {
+        width: 13px;
+        height: 2px;
+        border-radius: 999px;
+        transform: translateY(-50%);
+      }
+
+      .chromeIcon.back::after {
+        width: 8px;
+        height: 8px;
+        border-left: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        background: transparent;
+        transform: translateY(-50%) rotate(45deg);
+      }
+
+      .chromeIcon.minimize::before {
+        content: "";
+        position: absolute;
+        left: 3px;
+        right: 3px;
+        bottom: 4px;
+        height: 2px;
+        border-radius: 999px;
+        background: currentColor;
+      }
+
+      .chromeIcon.fullscreen::before,
+      .chromeIcon.fullscreen::after {
+        content: "";
+        position: absolute;
+        width: 14px;
+        height: 14px;
+      }
+
+      .chromeIcon.fullscreen::before {
+        top: 2px;
+        left: 2px;
+        border-top: 2px solid currentColor;
+        border-left: 2px solid currentColor;
+      }
+
+      .chromeIcon.fullscreen::after {
+        right: 2px;
+        bottom: 2px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+      }
+
+      .transportButton {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        min-width: 44px;
+        padding: 0;
+      }
+
+      .transportIcon {
+        position: relative;
+        display: block;
+        width: 18px;
+        height: 18px;
+      }
+
+      .transportIcon.play {
+        width: 0;
+        height: 0;
+        margin-left: 3px;
+        border-top: 9px solid transparent;
+        border-bottom: 9px solid transparent;
+        border-left: 14px solid currentColor;
+      }
+
+      .transportIcon.pause::before,
+      .transportIcon.pause::after {
+        content: "";
+        position: absolute;
+        top: 1px;
+        width: 5px;
+        height: 16px;
+        border-radius: 2px;
+        background: currentColor;
+      }
+
+      .transportIcon.pause::before {
+        left: 3px;
+      }
+
+      .transportIcon.pause::after {
+        right: 3px;
+      }
+
+      .transportButton .play {
+        display: none;
+      }
+
+      .transportButton.is-paused .play {
+        display: block;
+      }
+
+      .transportButton.is-paused .pause {
+        display: none;
+      }
+
+      .timelineBlock {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+        width: min(940px, calc(100vw - 32px));
+        margin: auto auto 0;
+        padding: 11px 12px;
+        border: 1px solid rgba(225, 237, 246, 0.16);
+        border-radius: 8px;
+        background: rgba(5, 10, 16, 0.58);
+        box-shadow: 0 20px 54px rgba(0, 0, 0, 0.42);
+        backdrop-filter: blur(22px);
+        box-sizing: border-box;
+        transition: opacity 0.2s ease, transform 0.22s ease, background 0.2s ease, border-color 0.2s ease;
+      }
+
+      body.controls-idle .timelineBlock {
+        opacity: 0.36;
+        transform: translateY(48px);
+        background: rgba(5, 10, 16, 0.36);
+      }
+
+      body.controls-idle .timelineBlock:hover,
+      body.controls-active .timelineBlock {
+        opacity: 1;
+        transform: translateY(0);
+        background: rgba(5, 10, 16, 0.64);
+        border-color: rgba(225, 237, 246, 0.2);
+      }
+
+      .timelineRow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+      }
+
+      .timelineRow span {
+        width: 48px;
+        font-size: 11px;
+        color: rgba(219, 230, 238, 0.72);
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+      }
+
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(216, 231, 242, 0.22);
+        outline: none;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #f2f7fb;
+        border: 2px solid #071018;
+        box-shadow: 0 0 0 4px rgba(242, 247, 251, 0.16);
+      }
+
+      .trackSelect {
+        min-width: 148px;
+        max-width: min(280px, 32vw);
+        height: 36px;
+        border-radius: 8px;
+        border: 1px solid rgba(213, 229, 242, 0.18);
+        background: rgba(8, 13, 19, 0.82);
+        color: #f2f7fb;
+        padding: 0 12px;
+        font: inherit;
+        font-size: 12px;
+        outline: none;
+        text-overflow: ellipsis;
+      }
+
+      .trackSelect option {
+        background: #090f16;
+        color: #f2f7fb;
+      }
+
+      .statusLine {
+        display: none;
+        font-size: 12px;
+        color: rgba(219, 230, 238, 0.72);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .compactControls {
+        display: grid;
+        grid-template-columns: auto auto auto minmax(0, max-content);
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .skipButton {
+        min-width: 48px;
+        padding: 0 10px;
+      }
+
+      @media (max-width: 720px) {
+        .timelineBlock {
+          width: calc(100vw - 20px);
+          padding: 9px;
+        }
+
+        .compactControls {
+          grid-template-columns: auto auto auto;
+        }
+
+        .trackSelectors {
+          grid-column: 1 / -1;
+          justify-content: center;
+        }
+
+        .trackSelect {
+          min-width: 112px;
+          max-width: 42vw;
+          padding: 0 8px;
+        }
+
+        button.primary {
+          min-width: 44px;
+        }
+
+        .timelineRow span {
+          width: 42px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div id="headerSurface" class="headerBar hidden">
+        <div class="buttons">
+          <button id="closePlayer" class="iconButton" title="Back" aria-label="Back">
+            <span class="chromeIcon back" aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="titleBlock">
+          <div class="eyebrow">Now playing</div>
+          <div id="title" class="title">Anime Hub Player</div>
+        </div>
+        <div class="buttons">
+          <button id="minimizePlayer" class="iconButton" title="Minimize" aria-label="Minimize">
+            <span class="chromeIcon minimize" aria-hidden="true"></span>
+          </button>
+          <button id="toggleFullscreen" class="iconButton" title="Fullscreen" aria-label="Fullscreen">
+            <span class="chromeIcon fullscreen" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+
+      <div id="controlsSurface" class="controlPanel hidden">
+        <div class="timelineBlock">
+          <div class="timelineRow">
+            <span id="currentTime">0:00</span>
+            <input id="timeline" type="range" min="0" max="0" value="0" />
+            <span id="duration">0:00</span>
+          </div>
+          <div class="compactControls">
+            <button id="seekBack" class="skipButton" title="Back 10 seconds">-10s</button>
+            <button id="togglePause" class="primary transportButton" title="Pause" aria-label="Pause">
+              <span class="transportIcon pause" aria-hidden="true"></span>
+              <span class="transportIcon play" aria-hidden="true"></span>
+            </button>
+            <button id="seekForward" class="skipButton" title="Forward 10 seconds">+10s</button>
+            <div class="trackSelectors">
+              <select id="subtitleSelect" class="trackSelect" title="Subtitle track">
+                <option value="auto">Subtitles: Auto</option>
+                <option value="off">Subtitles: Off</option>
+              </select>
+              <select id="audioSelect" class="trackSelect" title="Audio track">
+                <option value="auto">Audio: Auto</option>
+              </select>
+            </div>
+          </div>
+          <div id="statusLine" class="statusLine">Preparing internal player...</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const surface = params.get('surface') || 'controls';
+      document.body.classList.add(`surface-${surface}`);
+
+      const headerSurface = document.getElementById('headerSurface');
+      const controlsSurface = document.getElementById('controlsSurface');
+      if (surface === 'header') {
+        headerSurface.classList.remove('hidden');
+      } else {
+        controlsSurface.classList.remove('hidden');
+      }
+
+      const title = document.getElementById('title');
+      const currentTime = document.getElementById('currentTime');
+      const duration = document.getElementById('duration');
+      const timeline = document.getElementById('timeline');
+      const togglePause = document.getElementById('togglePause');
+      const statusLine = document.getElementById('statusLine');
+      const subtitleSelect = document.getElementById('subtitleSelect');
+      const audioSelect = document.getElementById('audioSelect');
+
+      let scrubbing = false;
+      let syncingSelects = false;
+      let idleTimer = null;
+      let lastState = {
+        currentTime: 0,
+        duration: 0,
+        paused: false
+      };
+
+      function setControlsActive() {
+        if (surface !== 'controls') return;
+        document.body.classList.add('controls-active');
+        document.body.classList.remove('controls-idle');
+        if (idleTimer) window.clearTimeout(idleTimer);
+        idleTimer = window.setTimeout(() => {
+          if (scrubbing) return;
+          document.body.classList.remove('controls-active');
+          document.body.classList.add('controls-idle');
+        }, 2200);
+      }
+
+      if (surface === 'controls') {
+        setControlsActive();
+        window.addEventListener('mousemove', setControlsActive);
+        window.addEventListener('mousedown', setControlsActive);
+        window.addEventListener('focusin', setControlsActive);
+      }
+
+      function trackLabel(track, fallback) {
+        return track.title || track.lang || fallback;
+      }
+
+      function syncTrackSelect(select, options, selectedValue, emptyLabel) {
+        if (!select) return;
+
+        syncingSelects = true;
+        const previous = select.value;
+        select.innerHTML = '';
+
+        for (const option of options) {
+          const element = document.createElement('option');
+          element.value = option.value;
+          element.textContent = option.label;
+          select.appendChild(element);
+        }
+
+        if (options.length === 0) {
+          const element = document.createElement('option');
+          element.value = 'auto';
+          element.textContent = emptyLabel;
+          select.appendChild(element);
+        }
+
+        select.value = selectedValue ?? previous ?? 'auto';
+        syncingSelects = false;
+      }
+
+      function formatTimeValue(value) {
+        const safe = Number.isFinite(value) && value > 0 ? value : 0;
+        const minutes = Math.floor(safe / 60);
+        const seconds = Math.floor(safe % 60);
+        return `${minutes}:${String(seconds).padStart(2, '0')}`;
+      }
+
+      function paintTransportState() {
+        if (currentTime) currentTime.textContent = formatTimeValue(lastState.currentTime);
+        if (duration) duration.textContent = formatTimeValue(lastState.duration);
+        if (timeline && !scrubbing) {
+          timeline.max = String(Math.max(0, Number(lastState.duration) || 0));
+          timeline.value = String(Math.min(Number(lastState.currentTime) || 0, Number(lastState.duration) || 0));
+        }
+        if (togglePause) {
+          const label = lastState.paused ? 'Play' : 'Pause';
+          togglePause.classList.toggle('is-paused', lastState.paused);
+          togglePause.title = label;
+          togglePause.setAttribute('aria-label', label);
+        }
+      }
+
+      function nudgeTime(seconds) {
+        const durationValue = Number(lastState.duration) || 0;
+        const maxTime = durationValue > 0 ? durationValue : Number.MAX_SAFE_INTEGER;
+        lastState.currentTime = Math.max(0, Math.min(maxTime, (Number(lastState.currentTime) || 0) + seconds));
+        paintTransportState();
+      }
+
+      function updateState(state) {
+        if (title) title.textContent = state.title || 'Anime Hub Player';
+        lastState = {
+          currentTime: Number(state.currentTime) || 0,
+          duration: Number(state.duration) || 0,
+          paused: Boolean(state.paused)
+        };
+        paintTransportState();
+        if (statusLine) {
+          const pieces = [
+            state.audioLabel ? `Audio: ${state.audioLabel}` : '',
+            state.subtitleLabel ? `Subs: ${state.subtitleLabel}` : '',
+            state.lastError ? `Info: ${state.lastError}` : ''
+          ].filter(Boolean);
+          statusLine.textContent = pieces.join(' / ') || 'Playing in internal mpv player';
+        }
+
+        const trackList = Array.isArray(state.trackList) ? state.trackList : [];
+        const audioOptions = [
+          { value: 'auto', label: 'Audio: Auto' },
+          ...trackList
+            .filter((track) => track && track.type === 'audio')
+            .map((track) => ({
+              value: String(track.id),
+              label: `Audio: ${trackLabel(track, `Track ${track.id}`)}`
+            }))
+        ];
+        const subtitleOptions = [
+          { value: 'auto', label: 'Subtitles: Auto' },
+          { value: 'off', label: 'Subtitles: Off' },
+          ...trackList
+            .filter((track) => track && track.type === 'sub')
+            .map((track) => ({
+              value: String(track.id),
+              label: `Subtitles: ${trackLabel(track, `Track ${track.id}`)}`
+            }))
+        ];
+
+        syncTrackSelect(
+          audioSelect,
+          audioOptions,
+          state.audioTrackId != null ? String(state.audioTrackId) : 'auto',
+          'Audio: Auto'
+        );
+        syncTrackSelect(
+          subtitleSelect,
+          subtitleOptions,
+          state.subtitleTrackId != null ? String(state.subtitleTrackId) : (state.subtitleVisible === false ? 'off' : 'auto'),
+          'Subtitles: Auto'
+        );
+      }
+
+      window.desktopPlayerChrome.onState(updateState);
+
+      document.getElementById('closePlayer')?.addEventListener('click', () => {
+        void window.desktopPlayerChrome.control('close-player');
+      });
+
+      document.getElementById('toggleFullscreen')?.addEventListener('click', () => {
+        void window.desktopPlayerChrome.control('toggle-fullscreen');
+      });
+
+      document.getElementById('minimizePlayer')?.addEventListener('click', () => {
+        void window.desktopPlayerChrome.control('minimize-player');
+      });
+
+      document.getElementById('seekBack')?.addEventListener('click', () => {
+        setControlsActive();
+        nudgeTime(-10);
+        void window.desktopPlayerChrome.control('seek-relative', -10);
+      });
+
+      document.getElementById('seekForward')?.addEventListener('click', () => {
+        setControlsActive();
+        nudgeTime(10);
+        void window.desktopPlayerChrome.control('seek-relative', 10);
+      });
+
+      document.getElementById('togglePause')?.addEventListener('click', () => {
+        setControlsActive();
+        lastState.paused = !lastState.paused;
+        paintTransportState();
+        void window.desktopPlayerChrome.control('toggle-pause');
+      });
+
+      document.getElementById('cycleSubtitles')?.addEventListener('click', () => {
+        void window.desktopPlayerChrome.control('cycle-subtitles');
+      });
+
+      document.getElementById('cycleAudio')?.addEventListener('click', () => {
+        void window.desktopPlayerChrome.control('cycle-audio');
+      });
+
+      subtitleSelect?.addEventListener('change', (event) => {
+        if (syncingSelects) return;
+        setControlsActive();
+        void window.desktopPlayerChrome.control('set-subtitle-track', event.target.value);
+      });
+
+      audioSelect?.addEventListener('change', (event) => {
+        if (syncingSelects) return;
+        setControlsActive();
+        void window.desktopPlayerChrome.control('set-audio-track', event.target.value);
+      });
+
+      timeline?.addEventListener('mousedown', () => {
+        scrubbing = true;
+        setControlsActive();
+      });
+
+      timeline?.addEventListener('mouseup', (event) => {
+        scrubbing = false;
+        setControlsActive();
+        lastState.currentTime = Number(event.target.value) || 0;
+        paintTransportState();
+        void window.desktopPlayerChrome.control('seek-absolute', Number(event.target.value));
+      });
+
+      timeline?.addEventListener('change', (event) => {
+        scrubbing = false;
+        setControlsActive();
+        lastState.currentTime = Number(event.target.value) || 0;
+        paintTransportState();
+        void window.desktopPlayerChrome.control('seek-absolute', Number(event.target.value));
+      });
+
+      window.addEventListener('keydown', (event) => {
+        setControlsActive();
+        if (event.code === 'Space') {
+          event.preventDefault();
+          lastState.paused = !lastState.paused;
+          paintTransportState();
+          void window.desktopPlayerChrome.control('toggle-pause');
+        }
+        if (event.key === 'ArrowRight') {
+          nudgeTime(10);
+          void window.desktopPlayerChrome.control('seek-relative', 10);
+        }
+        if (event.key === 'ArrowLeft') {
+          nudgeTime(-10);
+          void window.desktopPlayerChrome.control('seek-relative', -10);
+        }
+        if (event.key.toLowerCase() === 's') {
+          void window.desktopPlayerChrome.control('cycle-subtitles');
+        }
+        if (event.key.toLowerCase() === 'a') {
+          void window.desktopPlayerChrome.control('cycle-audio');
+        }
+        if (event.key.toLowerCase() === 'f') {
+          void window.desktopPlayerChrome.control('toggle-fullscreen');
+        }
+      });
+    </script>
+  </body>
+</html>

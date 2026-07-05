@@ -1,0 +1,6 @@
+{
+    "name":  "anime-hub-desktop",
+    "version":  "0.1.0",
+    "private":  true,
+    "main":  "desktop/main.js"
+}

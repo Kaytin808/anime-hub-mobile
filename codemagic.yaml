@@ -1,0 +1,33 @@
+workflows:
+  anime-hub-ios-test-wrapper:
+    name: Anime Hub iOS Test Wrapper
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      node: latest
+      xcode: latest
+      vars:
+        APP_PROJECT_PATH: "mobile-port/ios/App/App.xcodeproj"
+        APP_SCHEME: "App"
+    scripts:
+      - name: Install mobile dependencies
+        script: |
+          cd mobile-port
+          npm ci
+      - name: Sync Capacitor iOS project
+        script: |
+          cd mobile-port
+          npx cap sync ios
+      - name: Build unsigned iOS archive for validation
+        script: |
+          xcodebuild \
+            -project "$APP_PROJECT_PATH" \
+            -scheme "$APP_SCHEME" \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath mobile-port/ios/App/build \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+    artifacts:
+      - mobile-port/ios/App/build/Build/Products/Debug-iphoneos/*.app
+      - mobile-port/ios/App/build/Build/Products/Debug-iphoneos/*.ipa

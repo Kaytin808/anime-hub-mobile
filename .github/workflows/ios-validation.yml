@@ -1,0 +1,48 @@
+name: iOS Validation Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "mobile-port/**"
+      - ".github/workflows/ios-validation.yml"
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile-port/package-lock.json
+
+      - name: Install mobile dependencies
+        working-directory: mobile-port
+        run: npm ci
+
+      - name: Sync iOS project
+        working-directory: mobile-port
+        run: npx cap sync ios
+
+      - name: Build unsigned iOS app
+        run: |
+          xcodebuild \
+            -project mobile-port/ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath mobile-port/ios/App/build \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+
+      - name: Upload unsigned app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnimeHub-unsigned-ios-app
+          path: mobile-port/ios/App/build/Build/Products/Debug-iphoneos/*.app

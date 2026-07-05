@@ -1,0 +1,17 @@
+{
+  "name": "Anime Hub Mobile",
+  "short_name": "Anime Hub",
+  "description": "Mobile anime catalog, episode guide, and RealDebrid stream resolver.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#07111f",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
