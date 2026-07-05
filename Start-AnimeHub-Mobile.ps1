@@ -3,6 +3,11 @@ $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $serverDir = Join-Path $root 'server'
 $mobileDir = Join-Path $root 'mobile-port'
+$logsDir = Join-Path $root 'logs'
+$serverLog = Join-Path $logsDir 'anime-backend.log'
+$mobileLog = Join-Path $logsDir 'anime-mobile.log'
+
+New-Item -ItemType Directory -Force -Path $logsDir | Out-Null
 
 function Get-TailscaleIp {
   $tailscale = Get-Command tailscale -ErrorAction SilentlyContinue
@@ -40,23 +45,26 @@ if ($tailscaleIp) {
 }
 
 Write-Host ''
-Write-Host 'Starting backend and mobile web server in separate windows...'
+Write-Host 'Starting backend and mobile web server in the background...'
 
 Start-Process powershell -ArgumentList @(
-  '-NoExit',
+  '-NoProfile',
   '-ExecutionPolicy', 'Bypass',
   '-Command',
-  "Set-Location '$serverDir'; npm run dev"
-)
+  "Set-Location '$serverDir'; npm run dev *> '$serverLog'"
+) -WindowStyle Hidden
 
 Start-Process powershell -ArgumentList @(
-  '-NoExit',
+  '-NoProfile',
   '-ExecutionPolicy', 'Bypass',
   '-Command',
-  "Set-Location '$mobileDir'; npm run dev"
-)
+  "Set-Location '$mobileDir'; npm run dev *> '$mobileLog'"
+) -WindowStyle Hidden
 
 Write-Host ''
-Write-Host 'Keep both server windows open while watching on iPhone.' -ForegroundColor Yellow
+Write-Host 'Servers are running in the background.' -ForegroundColor Green
+Write-Host "Backend log: $serverLog"
+Write-Host "Mobile log:  $mobileLog"
+Write-Host 'Use Stop Anime Hub Mobile.bat when you are done watching.' -ForegroundColor Yellow
 Write-Host 'Press any key to close this launcher window.'
 $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
