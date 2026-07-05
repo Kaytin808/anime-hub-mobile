@@ -65,3 +65,45 @@ workflows:
     artifacts:
       - build/ios/ipa/*.ipa
       - mobile-port/ios/App/build/ios/ipa/*.ipa
+
+  anime-hub-free-sideload-package:
+    name: Anime Hub Free Sideload Package
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      node: latest
+      xcode: latest
+      vars:
+        APP_PROJECT_PATH: "mobile-port/ios/App/App.xcodeproj"
+        APP_SCHEME: "App"
+        DERIVED_DATA_PATH: "mobile-port/ios/App/build"
+        UNSIGNED_IPA_PATH: "mobile-port/ios/App/build/AnimeHub-unsigned.ipa"
+    scripts:
+      - name: Install mobile dependencies
+        script: |
+          cd mobile-port
+          npm ci
+      - name: Sync Capacitor iOS project
+        script: |
+          cd mobile-port
+          npx cap sync ios
+      - name: Build unsigned iOS app
+        script: |
+          xcodebuild \
+            -project "$APP_PROJECT_PATH" \
+            -scheme "$APP_SCHEME" \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$DERIVED_DATA_PATH" \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+      - name: Package unsigned IPA for Windows sideload signing
+        script: |
+          APP_PATH="$DERIVED_DATA_PATH/Build/Products/Debug-iphoneos/App.app"
+          PACKAGE_DIR="$DERIVED_DATA_PATH/unsigned-ipa"
+          rm -rf "$PACKAGE_DIR"
+          mkdir -p "$PACKAGE_DIR/Payload"
+          cp -R "$APP_PATH" "$PACKAGE_DIR/Payload/"
+          ditto -c -k --keepParent "$PACKAGE_DIR/Payload" "$UNSIGNED_IPA_PATH"
+    artifacts:
+      - mobile-port/ios/App/build/AnimeHub-unsigned.ipa

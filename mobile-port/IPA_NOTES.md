@@ -11,7 +11,7 @@ This mobile port is prepared for a Capacitor iOS wrapper.
 
 ## Build requirements
 
-Creating a signed `.ipa` requires:
+Creating a paid Ad Hoc signed `.ipa` requires:
 
 - macOS
 - Xcode
@@ -55,6 +55,27 @@ To use Ad Hoc signing:
 7. Run `Anime Hub Personal Sideload IPA`.
 
 If you use Sideloadly with a free Apple ID, the app may expire and need refreshing. A paid Apple Developer account with Ad Hoc signing is the more reliable private-only route.
+
+## Free Apple ID sideload path
+
+If you do not have a paid Apple Developer account, use the Codemagic workflow:
+
+`Anime Hub Free Sideload Package`
+
+That workflow creates:
+
+`AnimeHub-unsigned.ipa`
+
+Then on Windows:
+
+1. Download the unsigned IPA from the Codemagic build artifacts.
+2. Install Sideloadly on Windows.
+3. Connect your iPhone by USB and trust the computer.
+4. Drag `AnimeHub-unsigned.ipa` into Sideloadly.
+5. Sign/install it with your free Apple ID.
+6. On the iPhone, trust the developer profile if iOS asks.
+
+Free Apple ID sideloading usually expires after about 7 days, so you may need to reinstall or refresh the app regularly.
 
 ## Mac commands
 
