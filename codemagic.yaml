@@ -9,7 +9,7 @@ workflows:
       vars:
         APP_PROJECT_PATH: "mobile-port/ios/App/App.xcodeproj"
         APP_SCHEME: "App"
-        CAPACITOR_SERVER_URL: "http://192.168.0.250:3010"
+        CAPACITOR_SERVER_URL: "http://100.68.118.31:3010"
     scripts:
       - name: Install mobile dependencies
         script: |
@@ -46,7 +46,7 @@ workflows:
       vars:
         APP_PROJECT_PATH: "mobile-port/ios/App/App.xcodeproj"
         APP_SCHEME: "App"
-        CAPACITOR_SERVER_URL: "http://192.168.0.250:3010"
+        CAPACITOR_SERVER_URL: "http://100.68.118.31:3010"
     scripts:
       - name: Install mobile dependencies
         script: |
@@ -80,7 +80,7 @@ workflows:
         APP_SCHEME: "App"
         DERIVED_DATA_PATH: "mobile-port/ios/App/build"
         UNSIGNED_IPA_PATH: "mobile-port/ios/App/build/AnimeHub-unsigned.ipa"
-        CAPACITOR_SERVER_URL: "http://192.168.0.250:3010"
+        CAPACITOR_SERVER_URL: "http://100.68.118.31:3010"
     scripts:
       - name: Install mobile dependencies
         script: |
