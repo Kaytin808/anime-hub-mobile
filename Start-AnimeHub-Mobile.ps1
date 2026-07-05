@@ -51,14 +51,14 @@ Start-Process powershell -ArgumentList @(
   '-NoProfile',
   '-ExecutionPolicy', 'Bypass',
   '-Command',
-  "Set-Location '$serverDir'; npm run dev *> '$serverLog'"
+  "Set-Location '$serverDir'; `$env:HOST='127.0.0.1'; npm run dev *> '$serverLog'"
 ) -WindowStyle Hidden
 
 Start-Process powershell -ArgumentList @(
   '-NoProfile',
   '-ExecutionPolicy', 'Bypass',
   '-Command',
-  "Set-Location '$mobileDir'; npm run dev *> '$mobileLog'"
+  "Set-Location '$mobileDir'; `$env:HOSTNAME='127.0.0.1'; npm run dev *> '$mobileLog'"
 ) -WindowStyle Hidden
 
 Write-Host ''
