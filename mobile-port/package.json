@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3010",
     "build": "next build",
-    "start": "next start -H 0.0.0.0 -p 3010",
+    "start": "next start -H 0.0.0.0",
     "cap:sync": "cap sync ios",
     "cap:open": "cap open ios"
   },
