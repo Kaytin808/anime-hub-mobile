@@ -19,27 +19,42 @@ Creating a signed `.ipa` requires:
 - The backend server reachable from the iPhone at `http://192.168.0.250:4000`
 - The mobile web server reachable from the iPhone at `http://192.168.0.250:3010`
 
-## Windows-only path
+## Windows-only path for an IPA
 
-You cannot build and sign an IPA directly on Windows. Use a cloud Mac builder:
+You cannot build and sign an IPA directly on Windows. You can still make a private sideload IPA by using a cloud Mac builder:
 
 1. Push this project to GitHub.
 2. Connect the repository to Codemagic.
 3. Let Codemagic read the root `codemagic.yaml`.
 4. Run `Anime Hub iOS Test Wrapper` first.
-5. After the unsigned validation build succeeds, add Apple signing in Codemagic to export a real `.ipa`.
+5. After the unsigned validation build succeeds, set up Apple signing in Codemagic.
+6. Run `Anime Hub Personal Sideload IPA`.
+7. Download the `.ipa` artifact from Codemagic.
+8. Install that IPA on your iPhone from Windows using Sideloadly, AltStore, or another sideload installer.
 
 There is also a GitHub Actions backup workflow at `.github/workflows/ios-validation.yml`.
 After pushing to GitHub, open Actions > iOS Validation Build > Run workflow.
 That workflow verifies the iOS project on a hosted Mac, but it does not create an installable signed IPA by itself.
 
-## To get a real IPA from Windows
+## Personal sideload signing
+
+The Codemagic workflow `Anime Hub Personal Sideload IPA` is configured for Ad Hoc signing:
+
+- Bundle ID: `com.animehub.mobile`
+- Distribution type: `ad_hoc`
+- App Store release: not required
+
+To use Ad Hoc signing:
 
 1. Create or use an Apple Developer account.
-2. Add the app id `com.animehub.mobile` in Apple Developer.
-3. Create an iOS signing certificate and provisioning profile, or connect App Store Connect to Codemagic.
-4. Add signing to the Codemagic workflow.
-5. Run Codemagic again and download the signed `.ipa` artifact.
+2. Register your iPhone UDID in Apple Developer.
+3. Add the app id `com.animehub.mobile`.
+4. Create an Apple Distribution certificate.
+5. Create an Ad Hoc provisioning profile for `com.animehub.mobile` that includes your iPhone.
+6. Add the certificate and profile to Codemagic code signing identities.
+7. Run `Anime Hub Personal Sideload IPA`.
+
+If you use Sideloadly with a free Apple ID, the app may expire and need refreshing. A paid Apple Developer account with Ad Hoc signing is the more reliable private-only route.
 
 ## Mac commands
 

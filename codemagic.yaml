@@ -31,3 +31,37 @@ workflows:
     artifacts:
       - mobile-port/ios/App/build/Build/Products/Debug-iphoneos/*.app
       - mobile-port/ios/App/build/Build/Products/Debug-iphoneos/*.ipa
+
+  anime-hub-personal-sideload-ipa:
+    name: Anime Hub Personal Sideload IPA
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      node: latest
+      xcode: latest
+      ios_signing:
+        distribution_type: ad_hoc
+        bundle_identifier: com.animehub.mobile
+      vars:
+        APP_PROJECT_PATH: "mobile-port/ios/App/App.xcodeproj"
+        APP_SCHEME: "App"
+    scripts:
+      - name: Install mobile dependencies
+        script: |
+          cd mobile-port
+          npm ci
+      - name: Sync Capacitor iOS project
+        script: |
+          cd mobile-port
+          npx cap sync ios
+      - name: Apply iOS signing profile
+        script: |
+          xcode-project use-profiles --project "$APP_PROJECT_PATH"
+      - name: Build signed IPA for sideloading
+        script: |
+          xcode-project build-ipa \
+            --project "$APP_PROJECT_PATH" \
+            --scheme "$APP_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - mobile-port/ios/App/build/ios/ipa/*.ipa
